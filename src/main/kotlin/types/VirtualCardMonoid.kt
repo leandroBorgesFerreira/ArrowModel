@@ -21,14 +21,4 @@ interface VirtualCardMonoid : Monoid<VirtualCard> {
                     this.cvc,
                     this.expireDate
             )
-
-    fun subtract(firstCard: VirtualCard, card: VirtualCard): VirtualCard =
-            VirtualCard(
-                    firstCard.id,
-                    mutableListOf<Charge>().apply { firstCard.chargeList.subtract(card.chargeList) },
-                    firstCard.cvc,
-                    firstCard.expireDate
-            )
 }
-
-fun VirtualCard.monoid() = object : VirtualCardMonoid {}

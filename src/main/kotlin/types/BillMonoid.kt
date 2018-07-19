@@ -12,5 +12,3 @@ interface BillMonoid : Monoid<Bill> {
 
     override fun Bill.combine(b: Bill): Bill = Bill(this.amount + b.amount, this.dueDate)
 }
-
-fun Bill.monoid() = object : BillMonoid { }
