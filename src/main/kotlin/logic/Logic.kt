@@ -20,18 +20,17 @@ import domain.VirtualCard
 import domain.monoid
 import java.time.LocalDate
 
-fun mergeCard(newCardId: Long, oldCardId: Long) =
+fun mergeCards(newCardId: Long, oldCardId: Long) =
     VirtualCardDb() pipe { dao ->
-        Option.applicative().tupled(dao.getEntity(newCardId), dao.getEntity(oldCardId))
-                .fix()
-                .map { (newCard, oldCard) ->
-                    dao.saveEntity(VirtualCard.monoid().combineAll(oldCard, newCard))
-                    dao.removeEntity(oldCard.id)
-                }
-                .toEither {
-                    //Card couldn't be merged
-                }
+        Option.monad().binding {
+            val (newCard, oldCard) = Option.applicative()
+                    .tupled(dao.getEntity(newCardId), dao.getEntity(oldCardId))
+                    .fix()
+                    .bind()
 
+            dao.saveEntity(VirtualCard.monoid().combineAll(newCard, oldCard)).bind()
+            dao.removeEntity(oldCard.id).bind()
+        }
 }
 
 fun getTotalBill(localDate: LocalDate) = totalBill(localDate, VirtualCardDb().getData())
@@ -62,21 +61,23 @@ fun <F, A> mergeDeferred(newId: Long,
                          oldId: Long,
                          dao: DeferredEntityDAO<A>,
                          monad: MonadDefer<F>,
-                         monoid: Monoid<A>): Kind<F, Unit> =
+                         monoid: Monoid<A>): Kind<F, Option<A>> =
         monad.bindingCatch {
             val newEntity = dao.getEntity(monad, newId).bind()
             val oldEntity = dao.getEntity(monad, oldId).bind()
 
-            Option.applicative()
-                    .tupled(newEntity, oldEntity)
-                    .fix()
-                    .map { (newEntity, oldEntity) ->
-                        val entity = monoid.combineAll(newEntity, oldEntity)
-                        dao.saveEntity(monad, entity)
-                    }.getOrElse {
-                        throw Exception("Ops!")
-                    }.bind()
+            val entity = monad.invoke {
+                Option.applicative()
+                        .tupled(newEntity, oldEntity)
+                        .fix()
+                        .map { (newEntity, oldEntity) ->
+                            monoid.combineAll(newEntity, oldEntity)
+                        }.getOrElse {
+                            throw Exception("Ops!")
+                        }
+            }.bind()
 
+            dao.saveEntity(monad, entity).bind()
             dao.removeEntity(monad, oldId).bind()
         }
 

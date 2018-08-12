@@ -1,7 +1,6 @@
 package api
 
-import arrow.core.Option
-import arrow.core.toOption
+import arrow.core.*
 import domain.Charge
 import domain.VirtualCard
 import java.time.LocalDate
@@ -26,13 +25,10 @@ class VirtualCardDb : EntityDAO<VirtualCard> {
 
     override fun getData(): List<VirtualCard> = cardsMap.values.toList()
 
-    override fun removeEntity(id: Long) {
-        cardsMap.remove(id)
-    }
+    override fun removeEntity(id: Long) : Option<VirtualCard> = cardsMap.remove(id).toOption()
 
     override fun getEntity(id: Long): Option<VirtualCard> = cardsMap[id].toOption()
 
-    override fun saveEntity(entity: VirtualCard) {
-        cardsMap[entity.id] = entity
-    }
+    override fun saveEntity(entity: VirtualCard) : Option<VirtualCard> = cardsMap.put(entity.id, entity).toOption()
+
 }

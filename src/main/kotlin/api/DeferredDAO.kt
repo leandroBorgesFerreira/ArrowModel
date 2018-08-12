@@ -12,10 +12,10 @@ class DeferredDAO<T>(private val dao: EntityDAO<T>) : DeferredEntityDAO<T> {
     override fun <F> getEntity(monadDefer: MonadDefer<F>, id: Long): Kind<F, Option<T>> =
             monadDefer { dao.getEntity(id) }
 
-    override fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long): Kind<F, Unit> =
+    override fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long): Kind<F, Option<T>> =
             monadDefer { dao.removeEntity(id) }
 
-    override fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T): Kind<F, Unit> =
+    override fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T): Kind<F, Option<T>> =
             monadDefer { dao.saveEntity(entity) }
 
 }

@@ -1,5 +1,6 @@
 package api
 
+import arrow.core.Either
 import arrow.core.Option
 
 interface EntityDAO<T> {
@@ -8,7 +9,7 @@ interface EntityDAO<T> {
 
     fun getEntity(id: Long) : Option<T>
 
-    fun removeEntity(id: Long)
+    fun removeEntity(id: Long) : Option<T>
 
-    fun saveEntity(entity: T)
+    fun saveEntity(entity: T) : Option<T>
 }

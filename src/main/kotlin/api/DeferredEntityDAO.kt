@@ -10,8 +10,8 @@ interface DeferredEntityDAO<T> {
 
     fun <F> getEntity(monadDefer: MonadDefer<F>, id: Long) : Kind<F, Option<T>>
 
-    fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long) : Kind<F, Unit>
+    fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long) : Kind<F, Option<T>>
 
-    fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T) : Kind<F, Unit>
+    fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T) : Kind<F, Option<T>>
 
 }
