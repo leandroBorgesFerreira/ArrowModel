@@ -61,23 +61,25 @@ fun <F, A> mergeDeferred(newId: Long,
                          oldId: Long,
                          dao: DeferredEntityDAO<F, A>,
                          monoid: Monoid<A>): Kind<F, Option<A>> =
-        dao.bindingCatch {
-            val newEntity = dao.getEntity(newId).bind()
-            val oldEntity = dao.getEntity(oldId).bind()
+        with(dao) {
+            bindingCatch {
+                val newEntity = getEntity(newId).bind()
+                val oldEntity = getEntity(oldId).bind()
 
-            val entity = dao.invoke {
-                Option.applicative()
-                        .tupled(newEntity, oldEntity)
-                        .fix()
-                        .map { (newEntity, oldEntity) ->
-                            monoid.combineAll(newEntity, oldEntity)
-                        }.getOrElse {
-                            throw Exception("Ops!")
-                        }
-            }.bind()
+                val entity = invoke {
+                    Option.applicative()
+                            .tupled(newEntity, oldEntity)
+                            .fix()
+                            .map { (newEntity, oldEntity) ->
+                                monoid.combineAll(newEntity, oldEntity)
+                            }.getOrElse {
+                                throw Exception("Ops!")
+                            }
+                }.bind()
 
-            dao.saveEntity(entity).bind()
-            dao.removeEntity(oldId).bind()
+                saveEntity(entity).bind()
+                removeEntity(oldId).bind()
+            }
         }
 
 fun concreteMerge() {
