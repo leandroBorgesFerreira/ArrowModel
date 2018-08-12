@@ -61,45 +61,24 @@ fun <F, A> mergeDeferred(newId: Long,
                          oldId: Long,
                          dao: DeferredEntityDAO<F, A>,
                          monoid: Monoid<A>): Kind<F, Option<A>> =
-        dao.run {
-            bindingCatch {
-                val newEntity = getEntity(newId).bind()
-                val oldEntity = dao.getEntity(oldId).bind()
+        dao.bindingCatch {
+            val newEntity = dao.getEntity(newId).bind()
+            val oldEntity = dao.getEntity(oldId).bind()
 
-                val entity = invoke {
-                    Option.applicative()
-                            .tupled(newEntity, oldEntity)
-                            .fix()
-                            .map { (newEntity, oldEntity) ->
-                                monoid.combineAll(newEntity, oldEntity)
-                            }.getOrElse {
-                                throw Exception("Ops!")
-                            }
-                }.bind()
+            val entity = dao.invoke {
+                Option.applicative()
+                        .tupled(newEntity, oldEntity)
+                        .fix()
+                        .map { (newEntity, oldEntity) ->
+                            monoid.combineAll(newEntity, oldEntity)
+                        }.getOrElse {
+                            throw Exception("Ops!")
+                        }
+            }.bind()
 
-                dao.saveEntity(entity).bind()
-                dao.removeEntity(oldId).bind()
-            }
+            dao.saveEntity(entity).bind()
+            dao.removeEntity(oldId).bind()
         }
-
-//        monad.bindingCatch {
-//            val newEntity = dao.getEntity(monad, newId).bind()
-//            val oldEntity = dao.getEntity(monad, oldId).bind()
-//
-//            val entity = monad.invoke {
-//                Option.applicative()
-//                        .tupled(newEntity, oldEntity)
-//                        .fix()
-//                        .map { (newEntity, oldEntity) ->
-//                            monoid.combineAll(newEntity, oldEntity)
-//                        }.getOrElse {
-//                            throw Exception("Ops!")
-//                        }
-//            }.bind()
-//
-//            dao.saveEntity(monad, entity).bind()
-//            dao.removeEntity(monad, oldId).bind()
-//        }
 
 fun concreteMerge() {
     mergeDeferred(1, 2, DeferredDAO(VirtualCardDb(), IO.monadDefer()), VirtualCard.monoid())
