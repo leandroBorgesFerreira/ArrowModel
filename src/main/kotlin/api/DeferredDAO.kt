@@ -4,18 +4,17 @@ import arrow.Kind
 import arrow.core.Option
 import arrow.effects.typeclasses.MonadDefer
 
-class DeferredDAO<T>(private val dao: EntityDAO<T>) : DeferredEntityDAO<T> {
+class DeferredDAO<F, T>(
+        private val dao: EntityDAO<T>,
+        private val monadDefer: MonadDefer<F>)
+    : DeferredEntityDAO<F, T>, MonadDefer<F> by monadDefer {
 
-    override fun <F> getData(monadDefer: MonadDefer<F>): Kind<F, List<T>> =
-            monadDefer { dao.getData() }
+    override fun MonadDefer<F>.getData(): Kind<F, List<T>> = invoke { dao.getData() }
 
-    override fun <F> getEntity(monadDefer: MonadDefer<F>, id: Long): Kind<F, Option<T>> =
-            monadDefer { dao.getEntity(id) }
+    override fun MonadDefer<F>.getEntity(id: Long): Kind<F, Option<T>> = invoke { dao.getEntity(id) }
 
-    override fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long): Kind<F, Option<T>> =
-            monadDefer { dao.removeEntity(id) }
+    override fun MonadDefer<F>.removeEntity(id: Long): Kind<F, Option<T>> = invoke { dao.removeEntity(id) }
 
-    override fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T): Kind<F, Option<T>> =
-            monadDefer { dao.saveEntity(entity) }
+    override fun MonadDefer<F>.saveEntity(entity: T): Kind<F, Option<T>> = invoke { dao.saveEntity(entity) }
 
 }

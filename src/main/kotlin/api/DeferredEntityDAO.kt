@@ -4,14 +4,14 @@ import arrow.Kind
 import arrow.core.Option
 import arrow.effects.typeclasses.MonadDefer
 
-interface DeferredEntityDAO<T> {
+interface DeferredEntityDAO<F, T> : MonadDefer<F> {
 
-    fun <F> getData(monadDefer: MonadDefer<F>) : Kind<F, List<T>>
+    fun MonadDefer<F>.getData() : Kind<F, List<T>>
 
-    fun <F> getEntity(monadDefer: MonadDefer<F>, id: Long) : Kind<F, Option<T>>
+    fun MonadDefer<F>.getEntity(id: Long) : Kind<F, Option<T>>
 
-    fun <F> removeEntity(monadDefer: MonadDefer<F>, id: Long) : Kind<F, Option<T>>
+    fun MonadDefer<F>.removeEntity(id: Long) : Kind<F, Option<T>>
 
-    fun <F> saveEntity(monadDefer: MonadDefer<F>, entity: T) : Kind<F, Option<T>>
+    fun MonadDefer<F>.saveEntity(entity: T) : Kind<F, Option<T>>
 
 }
