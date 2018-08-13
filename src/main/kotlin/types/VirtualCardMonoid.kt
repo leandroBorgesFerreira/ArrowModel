@@ -14,10 +14,7 @@ interface VirtualCardMonoid : Monoid<VirtualCard> {
     override fun VirtualCard.combine(b: VirtualCard): VirtualCard =
             VirtualCard(
                     this.id,
-                    mutableListOf<Charge>().apply {
-                        addAll(this@combine.chargeList)
-                        addAll(b.chargeList)
-                    },
+                    this@combine.chargeList + b.chargeList,
                     this.cvc,
                     this.expireDate
             )
