@@ -46,16 +46,16 @@ fun virtualCardToBill(virtualCard: VirtualCard, dueDate: LocalDate) : Bill =
 private fun totalAmountFromCharges(chargeList: Iterable<Charge>) : Double =
         chargeList.sumByDouble { charge -> charge.amount }
 
-fun <A> mergeEntity(newId: Long, oldId: Long, dao: EntityDAO<A>, monoid: Monoid<A>) {
-    Option.applicative().tupled(dao.getEntity(newId), dao.getEntity(oldId))
-            .fix()
-            .map { (newEntity, oldEntity) ->
-                dao.saveEntity(monoid.combineAll(newEntity, oldEntity))
-                dao.removeEntity(oldId)
-            }.toEither {
-                //Entity couldn't be merged
-            }
-}
+fun <A> mergeEntity(newId: Long, oldId: Long, dao: EntityDAO<A>, monoid: Monoid<A>) =
+    Option.monad().binding {
+        Option.applicative().tupled(dao.getEntity(newId), dao.getEntity(oldId))
+                .fix()
+                .map { (newEntity, oldEntity) ->
+                    dao.saveEntity(monoid.combineAll(newEntity, oldEntity))
+                }.bind()
+
+        dao.removeEntity(oldId).bind()
+    }
 
 fun <F, A> mergeDeferred(newId: Long,
                          oldId: Long,
