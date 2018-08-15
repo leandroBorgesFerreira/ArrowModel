@@ -1,11 +1,8 @@
 package types
 
-import arrow.instances.eq
 import arrow.test.laws.MonoidLaws
 import arrow.typeclasses.Eq
 import domain.Bill
-import domain.monoid
-import io.kotlintest.matchers.fail
 import io.kotlintest.matchers.shouldEqual
 import org.junit.Test
 import java.time.LocalDate
@@ -24,5 +21,7 @@ class BillMonoidTest {
         MonoidLaws.laws(Bill.monoid(), bill, equality).forEach {
             it.test()
         }
+
+
     }
 }
