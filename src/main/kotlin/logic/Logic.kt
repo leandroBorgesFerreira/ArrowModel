@@ -12,12 +12,12 @@ import arrow.effects.monadDefer
 import arrow.effects.typeclasses.MonadDefer
 import arrow.syntax.function.pipe
 import arrow.typeclasses.Monoid
+import arrow.typeclasses.Semigroup
 import arrow.typeclasses.binding
 import arrow.typeclasses.bindingCatch
 import domain.Bill
 import domain.Charge
 import domain.VirtualCard
-import domain.monoid
 import java.time.LocalDate
 
 fun mergeCards(newCardId: Long, oldCardId: Long) =
@@ -28,7 +28,7 @@ fun mergeCards(newCardId: Long, oldCardId: Long) =
                     .fix()
                     .bind()
 
-            dao.saveEntity(VirtualCard.monoid().combineAll(newCard, oldCard)).bind()
+            dao.saveEntity(VirtualCard.semigroup().run { newCard + oldCard }).bind()
             dao.removeEntity(oldCard.id).bind()
         }
 }
@@ -38,7 +38,7 @@ fun getTotalBill(localDate: LocalDate) = totalBill(localDate, VirtualCardDb().ge
 private fun totalBill(dueDate: LocalDate, virtualCards: Iterable<VirtualCard>) : Bill =
         virtualCards
             .map { virtualCard -> virtualCardToBill(virtualCard, dueDate) }
-            .reduce { acc, bill -> Bill.monoid().combineAll(acc, bill) }
+            .reduce { acc, bill -> Bill.monoid().run { acc + bill } }
 
 fun virtualCardToBill(virtualCard: VirtualCard, dueDate: LocalDate) : Bill =
         Bill(totalAmountFromCharges(virtualCard.chargeList), dueDate)
@@ -61,7 +61,7 @@ fun <F, A> mergeDeferred(newId: Long,
                          oldId: Long,
                          dao: DeferredEntityDAO<A>,
                          monad: MonadDefer<F>,
-                         monoid: Monoid<A>): Kind<F, Option<A>> =
+                         semigroup: Semigroup<A>): Kind<F, Option<A>> =
         monad.bindingCatch {
             val newEntity = dao.getEntity(monad, newId).bind()
             val oldEntity = dao.getEntity(monad, oldId).bind()
@@ -71,7 +71,7 @@ fun <F, A> mergeDeferred(newId: Long,
                         .tupled(newEntity, oldEntity)
                         .fix()
                         .map { (newEntity, oldEntity) ->
-                            monoid.combineAll(newEntity, oldEntity)
+                            semigroup.run { newEntity + oldEntity }
                         }.getOrElse {
                             throw Exception("Ops!")
                         }
@@ -82,7 +82,7 @@ fun <F, A> mergeDeferred(newId: Long,
         }
 
 fun concreteMerge() {
-    mergeDeferred(1, 2, DeferredDAO(VirtualCardDb()), IO.monadDefer(), VirtualCard.monoid())
+    mergeDeferred(1, 2, DeferredDAO(VirtualCardDb()), IO.monadDefer(), VirtualCard.semigroup())
             .fix()
             .attempt()
             .unsafeRunSync()
