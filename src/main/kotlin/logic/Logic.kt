@@ -38,7 +38,7 @@ fun getTotalBill(localDate: LocalDate) = totalBill(localDate, VirtualCardDb().ge
 private fun totalBill(dueDate: LocalDate, virtualCards: Iterable<VirtualCard>) : Bill =
         virtualCards
             .map { virtualCard -> virtualCardToBill(virtualCard, dueDate) }
-            .reduce { acc, bill -> Bill.monoid().run { acc + bill } }
+            .reduce { acc, bill -> Bill.semigroup().run { acc + bill } }
 
 fun virtualCardToBill(virtualCard: VirtualCard, dueDate: LocalDate) : Bill =
         Bill(totalAmountFromCharges(virtualCard.chargeList), dueDate)

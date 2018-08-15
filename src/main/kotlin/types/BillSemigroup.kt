@@ -1,18 +1,15 @@
 package types
 
 import arrow.instance
-import arrow.typeclasses.Monoid
+import arrow.typeclasses.Semigroup
 import domain.Bill
 import java.time.LocalDate
 
 @instance(Bill::class)
-interface BillMonoid : Monoid<Bill> {
-
-    override fun empty(): Bill = Bill(0.0, LocalDate.MIN)
+interface BillSemigroup : Semigroup<Bill> {
 
     override fun Bill.combine(b: Bill): Bill = Bill(
             this.amount + b.amount,
-            localDateMonoid().run { this@combine.dueDate + b.dueDate }
+            dueDate
     )
 }
-
