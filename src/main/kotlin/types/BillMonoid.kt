@@ -12,7 +12,7 @@ interface BillMonoid : Monoid<Bill> {
 
     override fun Bill.combine(b: Bill): Bill = Bill(
             this.amount + b.amount,
-            localDateSemiGroup().run { this@combine.dueDate + b.dueDate }
+            localDateMonoid().run { this@combine.dueDate + b.dueDate }
     )
 }
 

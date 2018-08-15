@@ -1,13 +1,15 @@
 package types
 
-import arrow.typeclasses.Semigroup
+import arrow.typeclasses.Monoid
 import java.time.LocalDate
 
-interface LocalDateSemigroup : Semigroup<LocalDate> {
+interface LocalDateMonoid : Monoid<LocalDate> {
+
+    override fun empty(): LocalDate = LocalDate.MIN
 
     override fun LocalDate.combine(b: LocalDate): LocalDate =
             if (this == LocalDate.MIN) b else this
 
 }
 
-fun localDateSemiGroup() = object : LocalDateSemigroup {}
+fun localDateMonoid() = object : LocalDateMonoid {}
