@@ -37,8 +37,8 @@ class VirtualCardSemigroupTest {
                 LocalDate.of(2020, 2, 1)
         )
 
-        val equality : Eq<VirtualCard> = Eq.invoke { v1, v2 ->
-            v1.shouldEqual(v2)
+        val equality : Eq<VirtualCard> = Eq.invoke { va, vb ->
+            va.shouldEqual(vb)
             true
         }
 
